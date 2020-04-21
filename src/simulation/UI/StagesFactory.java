@@ -10,16 +10,19 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import simulation.utils.City;
 import simulation.utils.Region;
 import simulation.utils.Stats;
 import simulation.utils.Virus;
 
+import javax.tools.Tool;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -178,6 +181,14 @@ public class StagesFactory {
             charts.put(city, pieChart);
             gridPane.add(pieChart, vertIdx / 4, vertIdx % 4);
             vertIdx++;
+            Tooltip tooltip = new Tooltip(getTextForTooltip(stats));
+            tooltip.setShowDelay(Duration.millis(0));
+            tooltip.setHideDelay(Duration.millis(0));
+            pieChart.getData().forEach(data -> {
+                Tooltip.install(data.getNode(), tooltip);
+                data.pieValueProperty().addListener((observable, oldValue, newValue) ->
+                        tooltip.setText(getTextForTooltip(allStats.get(city).get(allStats.get(city).size() - 1))));
+            });
         }
         NumberAxis xAxis = new NumberAxis();
         xAxis.setLabel("Weeks");
@@ -258,7 +269,7 @@ public class StagesFactory {
         save.setStyle("-fx-background-color: #4e8b4b; -fx-textfill: white;");
         restart.setStyle("-fx-background-color: #8b8200; -fx-textfill: white;");
         exit.setStyle("-fx-background-color: #8b3400; -fx-textfill: white;");
-        
+
         return stage;
     }
 
@@ -298,5 +309,15 @@ public class StagesFactory {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getTextForTooltip(Stats stats) {
+        return "Budget " + (int) stats.budget + "\n" +
+                "Population " + stats.population + "\n" +
+                "Healthy " + stats.healthy + "\n" +
+                "Susceptible " + stats.susceptible + "\n" +
+                "Vaccinated (step) " + stats.vaccinated + "\n" +
+                "Infected " + stats.infected + "\n" +
+                "Dead (step) " + stats.dead;
     }
 }
